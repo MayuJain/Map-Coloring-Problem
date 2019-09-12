@@ -1,0 +1,309 @@
+<!--<!doctype>-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Map Coloring</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="map_style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+
+  <h1 style="text-align: center">Constraint Satisfaction Problem</h1>
+  <h2 style="text-align: center">ITCS - 6150 Project 3</h2>
+    <div class="wrapper">
+      <section>
+
+        <label for="country"></label>
+        <select id="country" name="country" onchange="onChangeCountry(this)">
+          <option value="US">US</option>
+          <option value="Australia">Australia</option>
+        </select>
+
+        <label for="method"></label>
+        <select id="method" name="method">
+          <option value="DFS">Depth First Search</option>
+          <option value="FC">Depth First Search + Forward Checking</option>
+          <option value="FCS">Depth First Search + Forward Checking + singleton</option>
+        </select>
+
+        <label for="heuristic"></label>
+        <select id="heuristic" name="heuristic">
+          <option value="WHeu">Without Heuristic</option>
+          <option value="Heu">With Heuristic</option>
+        </select>
+
+        <p>Chromatic Number is:</p><span><p id="chromatic"></p></span>
+
+      <button id="map-coloring-button" onclick="mapColor(1)">Start Map-coloring</button>
+      <br/>
+      <br/>
+
+        <div id="Usa_Map_Div">
+          <h3>US MAP</h3>
+          <object id="us-map" data="us_map.svg" type="image/svg+xml"></object>
+        </div>
+
+        <div id="Aus_Map_Div">
+          <h3>AUSTRALIA MAP</h3>
+          <object id="au-map" data="au.svg" type="image/svg+xml"></object>
+        </div>
+
+      <script src="csp.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	
+      <script>
+
+        var chromaticNumber = 2;
+        var one_color = ['red'];
+        var two_color = ['red', 'yellow'];
+        var three_color = ['red', 'yellow', 'green'];
+        var four_color = ['red', 'yellow', 'green', 'blue'];
+        function mapColor(color){
+
+          let country=document.getElementById("country").value;
+          let method=document.getElementById("method").value;
+          let heuristic = document.getElementById("heuristic").value;
+          var time1 = new Date().getTime();
+          solve_map(color,country,method,heuristic);
+          var time2 = new Date().getTime();
+
+          console.log("running time: "+(time2-time1));
+          document.getElementById("chromatic").innerHTML = chromaticNumber;
+
+
+        }
+
+      function solve_map(color,country,method,heuristic) {
+          if (country === "US") {
+
+            if(method === "DFS"){
+              color = 4;
+            }
+
+            let data = {
+              "WA": ["ID", "OR"],
+              "ID": ["MT", "NV", "OR", "UT", "WA", "WY"],
+              "OR": ["CA", "ID", "NV", "WA"],
+              "MT": ["ID", "ND", "SD", "WY"],
+              "NV": ["AZ", "CA", "ID", "OR", "UT"],
+              "UT": ["AZ", "CO", "ID", "NM", "NV", "WY"],
+              "WY": ["CO", "ID", "MT", "NE", "SD", "UT"],
+              "CA": ["AZ", "NV", "OR"],
+              "ND": ["MN", "MT", "SD"],
+              "SD": ["IA", "MN", "MT", "ND", "NE", "WY"],
+              "AZ": ["CA", "CO", "NM", "NV", "UT"],
+              "CO": ["AZ", "KS", "NE", "NM", "OK", "UT", "WY"],
+              "NM": ["AZ", "CO", "OK", "TX", "UT"],
+              "NE": ["CO", "IA", "KS", "MO", "SD", "WY"],
+              "MN": ["IA", "ND", "SD", "WI"],
+              "IA": ["MN", "MO", "NE", "SD", "WI", "IL"],
+              "KS": ["CO", "MO", "NE", "OK"],
+              "OK": ["AR", "CO", "KS", "MO", "NM", "TX"],
+              "TX": ["AR", "LA", "NM", "OK"],
+              "MO": ["AR", "IA", "IL", "KS", "KY", "NE", "OK", "TN"],
+              "WI": ["IA", "IL", "MI", "MN"],
+              "IL": ["IA", "IN", "KY", "MO", "WI"],
+              "AR": ["LA", "MO", "MS", "OK", "TN", "TX"],
+              "LA": ["AR", "MS", "TX"],
+              "KY": ["IL", "IN", "MO", "OH", "TN", "VA", "WV"],
+              "TN": ["AL", "AR", "GA", "KY", "MO", "MS", "NC", "VA"],
+              "MI": ["IN", "OH", "WI"],
+              "IN": ["IL", "KY", "MI", "OH"],
+              "MS": ["AL", "AR", "LA", "TN"],
+              "OH": ["IN", "KY", "MI", "PA", "WV"],
+              "VA": ["DC", "KY", "MD", "NC", "TN", "WV"],
+              "WV": ["KY", "MD", "OH", "PA", "VA"],
+              "AL": ["FL", "GA", "MS", "TN"],
+              "GA": ["AL", "FL", "NC", "SC", "TN"],
+              "NC": ["GA", "SC", "TN", "VA"],
+              "PA": ["DE", "MD", "NJ", "NY", "OH", "WV"],
+              "DC": ["MD", "VA"],
+              "MD": ["DC", "DE", "PA", "VA", "WV"],
+              "FL": ["AL", "GA"],
+              "SC": ["GA", "NC"],
+              "DE": ["MD", "NJ", "PA"],
+              "NJ": ["DE", "NY", "PA"],
+              "NY": ["CT", "MA", "NJ", "PA", "VT"],
+              "CT": ["MA", "NY", "RI"],
+              "MA": ["CT", "NH", "NY", "RI", "VT"],
+              "VT": ["MA", "NH", "NY"],
+              "RI": ["CT", "MA"],
+              "NH": ["MA", "ME", "VT"],
+              "ME": ["NH"],
+              "HI": [],
+              "AK": []
+            };
+
+            var us = {}, variables = {}, constraints = [];
+
+            function neq(s1, s2) {
+              return s1 !== s2;
+            }
+            for (let state in data) {
+
+              if(color===1){
+                variables[state] = one_color;
+              }
+              else if(color===2){
+                variables[state] = two_color;
+              }
+              else if(color===3){
+                variables[state] = three_color;
+              }
+              else if(color===4){
+                variables[state] = four_color;
+              }
+              //variables[state] = ['red', 'yellow', 'green', 'blue'];
+              for (var i = 0; i < data[state].length; i++) {
+                constraints.push([state, data[state][i], neq]);
+              }
+            }
+
+            us.variables = variables;
+
+            us.constraints = constraints;
+
+            function visualize(assigned) {
+
+              for (var state in assigned) {
+
+                var svg = document.getElementById('us-map');
+
+                // Get the SVG document inside the Object tag
+                var svgDoc = svg.contentDocument;
+                // Get one of the SVG items by ID;
+                var svgItem = svgDoc.getElementById(state);
+                // Set the colour to something else
+                svgItem.setAttribute("fill", assigned[state][0]);
+              }
+            }
+
+
+            us.variables = variables;
+            us.constraints = constraints;
+            us.cb = visualize;
+            us.timeStep = 500; // 500ms between updates.
+
+
+            visualize({});
+			var assigments=0;
+            var result = csp.solve(us,method,heuristic,country,assigments), valid = true;
+            for (var state in data) {
+              for (var i = 0, s = data[state]; i < s.length; i++) {
+                if (result[state] === result[s[i]]) {
+                  valid = false; }
+              }
+            }
+
+            var status = (result === 'FAILURE' || !valid) ? false : true;
+
+            console.log("Color count is"+ color+"Status is "+status);
+            if(!status){
+              solve_map(color+1,country,method,heuristic);
+            }else{
+              chromaticNumber = color;
+            }
+
+          } else {
+
+            if(method === "DFS"){
+              color = 3;
+            }
+
+            let data = {
+              "WA": ["NT", "SA"],
+              "NT": ["WA", "SA", "QL"],
+              "QL": ["NT", "SA", "NSW"],
+              "SA": ["WA", "NT", "QL", "NSW", "VT"],
+              "NSW": ["VT", "SA", "QL"],
+              "VT": ["SA", "NSW"],
+              "TN": []
+            };
+
+            var us = {}, variables = {}, constraints = [];
+
+            function neq(s1, s2) {
+              return s1 !== s2;
+            }
+
+            for (var state in data) {
+              if(color===1){
+                variables[state] = one_color;
+              }
+              else if(color===2){
+                variables[state] = two_color;
+              }
+              else if(color===3){
+                variables[state] = three_color;
+              }
+              else if(color===4){
+                variables[state] = four_color;
+              }
+
+              for (var i = 0, s = data[state]; i < s.length; i++) {
+                constraints.push([state, s[i], neq]);
+              }
+            }
+
+            us.variables = variables;
+
+            us.constraints = constraints;
+
+            function visualize(assigned) {
+
+              for (var state in assigned) {
+
+                $("#map-coloring-button").css("color", 'red');
+
+                var svg = document.getElementById('au-map');
+
+                // Get the SVG document inside the Object tag
+                var svgDoc = svg.contentDocument;
+                // Get one of the SVG items by ID;
+                var svgItem = svgDoc.getElementById(state);
+                // Set the colour to something else
+                svgItem.setAttribute("fill", assigned[state][0]);
+              }
+            }
+
+
+            us.variables = variables;
+            us.constraints = constraints;
+            us.cb = visualize;
+            us.timeStep = 500; // 500ms between updates.
+
+
+            visualize({});
+            var result1 = csp.solve(us,method,heuristic,country), valid = true;
+
+            for (var state in data) {
+              for (var i = 0, s = data[state]; i < s.length; i++) {
+                if (result1[state] == result1[s[i]]) { valid = false; }
+              }
+            }
+
+            var status1 = (result1 == 'FAILURE' || !valid) ? false : true;
+
+            console.log("Color count is"+ color+"Status is "+status1);
+            if(!status1){
+              solve_map(color+1,country,method,heuristic);
+            }
+            else{
+              chromaticNumber = color;
+            }
+          }
+      }
+      </script>
+
+      </section>
+      
+    </div>
+
+  </body>
+</html>
